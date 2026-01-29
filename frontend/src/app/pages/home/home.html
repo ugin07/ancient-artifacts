@@ -10,16 +10,57 @@
   <ng-container *ngIf="vm.state === 'ready'">
     <h2>{{ vm.title }}</h2>
 
-    <ul>
-      <li *ngFor="let cat of vm.categories">
-        <b>{{ cat.title }}</b>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="hint">Kliknij element, aby edytować opis.</div>
 
-        <ol>
-          <li *ngFor="let it of cat.items">
-            {{ it.title }}
-          </li>
-        </ol>
-      </li>
-    </ul>
+        <div class="cats">
+          <div class="cat" *ngFor="let cat of vm.categories; trackBy: trackCat">
+            <div class="catTitle">{{ cat.title }}</div>
+
+            <ul class="items">
+              <li
+                class="item"
+                *ngFor="let it of cat.items; let i = index; trackBy: trackItem"
+                [class.active]="vm.selectedKey === it.key"
+                (click)="selectItem(it)"
+                role="button"
+                tabindex="0"
+              >
+                <span class="num">{{ i + 1 }}</span>
+                <span class="txt">{{ it.title }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div *ngIf="!vm.selectedKey" class="hint">
+          Wybierz element z lewej strony — po prawej pojawi się notatka.
+        </div>
+
+        <ng-container *ngIf="vm.selectedKey">
+          <div class="topLine">
+            <div class="selTitle">{{ vm.selectedTitle }}</div>
+            <div class="state">
+              <span *ngIf="vm.noteLoading">Zapisywanie / ładowanie…</span>
+              <span *ngIf="vm.noteError" class="err">Błąd (backend / DB)</span>
+            </div>
+          </div>
+
+          <textarea
+            [value]="vm.note"
+            (input)="onNoteInput(($any($event.target)).value)"
+            placeholder="Wpisz opis…"
+          ></textarea>
+
+          <div class="actions">
+            <button (click)="save()" [disabled]="vm.noteLoading">Zapisz</button>
+            <button (click)="remove()" [disabled]="vm.noteLoading">Usuń</button>
+          </div>
+        </ng-container>
+      </main>
+    </div>
   </ng-container>
 </ng-container>

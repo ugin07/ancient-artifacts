@@ -4,7 +4,12 @@ import { Observable } from 'rxjs';
 
 export type CatalogItem = { key: string; title: string };
 export type CatalogCategory = { id: string; title: string; items: CatalogItem[] };
-export type CatalogRoot = { id: string; title: string; categories: CatalogCategory[] };
+
+export type CatalogResponse = {
+  id: string;
+  title: string;
+  categories: CatalogCategory[];
+};
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -19,8 +24,8 @@ export class ApiService {
     });
   }
 
-  catalog(): Observable<CatalogRoot[]> {
-    return this.http.get<CatalogRoot[]>(`${this.base}/catalog?ts=${Date.now()}`);
+  catalog(): Observable<CatalogResponse> {
+    return this.http.get<CatalogResponse>(`${this.base}/catalog?ts=${Date.now()}`);
   }
 
   getNote(key: string): Observable<{ content: string }> {
