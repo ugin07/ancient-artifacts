@@ -1,72 +1,75 @@
-const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
-
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const { pool } = require("./db");
-const { auth } = require("./middleware-auth");
-const { CATEGORIES } = require("./data");
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const db = require('./db');
+const { auth } = require('./middleware-auth');
 
 const app = express();
-app.use(cors({ origin: true }));
-app.use(express.json({ limit: "1mb" }));
 
-app.get("/health", (_req, res) => res.json({ ok: true }));
+app.use(cors({
+  origin: 'http://localhost:4200',
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma'],
+  optionsSuccessStatus: 200
+}));
 
-app.post("/auth/login", async (req, res) => {
-  const { username, password } = req.body || {};
-  if (!username || !password) return res.status(400).json({ message: "Missing fields" });
+app.use(express.json());
 
-  const [rows] = await pool.query(
-    "SELECT id, username, password_hash FROM users WHERE username = ?",
+app.get('/health', (_, res) => res.json({ ok: true }));
+
+app.post('/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  const [[user]] = await db.query(
+    'SELECT * FROM users WHERE username=?',
     [username]
   );
-
-  const user = rows[0];
-  if (!user) return res.status(401).json({ message: "Bad credentials" });
+  if (!user) return res.status(401).json({ error: 'Bad credentials' });
 
   const ok = await bcrypt.compare(password, user.password_hash);
-  if (!ok) return res.status(401).json({ message: "Bad credentials" });
+  if (!ok) return res.status(401).json({ error: 'Bad credentials' });
 
-  const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET, { expiresIn: "30d" });
+  const token = jwt.sign(
+    { id: user.id, username: user.username },
+    process.env.JWT_SECRET,
+    { expiresIn: '1d' }
+  );
+
   res.json({ token });
 });
 
-app.get("/catalog", auth, (_req, res) => {
-  res.json(CATEGORIES);
+app.get('/catalog', auth, (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.json({
+    title: 'Starożytność',
+    items: [
+      { key: 'egipt', title: 'Egipt' },
+      { key: 'grecja', title: 'Grecja' },
+      { key: 'rzym', title: 'Rzym' }
+    ]
+  });
 });
 
-app.get("/notes/:itemKey", auth, async (req, res) => {
-  const itemKey = String(req.params.itemKey);
-  const [rows] = await pool.query(
-    "SELECT item_key, content, updated_at FROM notes WHERE item_key = ?",
-    [itemKey]
+app.get('/notes/:key', auth, async (req, res) => {
+  const [[note]] = await db.query(
+    'SELECT content FROM notes WHERE item_key=?',
+    [req.params.key]
   );
-  res.json(rows[0] || { item_key: itemKey, content: "" });
+  res.json({ content: note?.content || '' });
 });
 
-app.put("/notes/:itemKey", auth, async (req, res) => {
-  const itemKey = String(req.params.itemKey);
-  const content = String(req.body?.content ?? "");
-
-  await pool.query(
-    "INSERT INTO notes (item_key, content) VALUES (?, ?) ON DUPLICATE KEY UPDATE content = VALUES(content)",
-    [itemKey, content]
+app.post('/notes/:key', auth, async (req, res) => {
+  await db.query(
+    `INSERT INTO notes (item_key, content)
+     VALUES (?, ?)
+     ON DUPLICATE KEY UPDATE content=?`,
+    [req.params.key, req.body.content, req.body.content]
   );
-
-  const [rows] = await pool.query(
-    "SELECT item_key, content, updated_at FROM notes WHERE item_key = ?",
-    [itemKey]
-  );
-  res.json(rows[0]);
-});
-
-app.delete("/notes/:itemKey", auth, async (req, res) => {
-  const itemKey = String(req.params.itemKey);
-  await pool.query("DELETE FROM notes WHERE item_key = ?", [itemKey]);
   res.json({ ok: true });
 });
 
-const port = Number(process.env.PORT || 4000);
-app.listen(port, () => console.log(`API running on http://localhost:${port}`));
+app.listen(process.env.PORT, () =>
+  console.log(`API running on http://localhost:${process.env.PORT}`)
+);

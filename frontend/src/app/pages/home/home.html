@@ -1,1 +1,19 @@
-<p>home works!</p>
+<button (click)="logout()">Wyloguj</button>
+
+<ng-container *ngIf="vm$ | async as vm">
+  <p *ngIf="vm.state === 'loading'">Ładowanie listy...</p>
+
+  <p *ngIf="vm.state === 'error'" class="err">
+    Nie udało się pobrać katalogu (sprawdź backend / token).
+  </p>
+
+  <ng-container *ngIf="vm.state === 'ready'">
+    <h2>{{ vm.title }}</h2>
+
+    <ul>
+      <li *ngFor="let c of vm.items">
+        {{ c.title }}
+      </li>
+    </ul>
+  </ng-container>
+</ng-container>

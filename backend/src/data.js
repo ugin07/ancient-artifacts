@@ -1,23 +1,18 @@
 const CATEGORIES = [
   {
-    id: "prehistoria",
-    title: "Prehistoria",
+    id: "egypt",
+    title: "Starożytny Egipt",
     items: [
-      { key: "prehistoria_01", title: "Wenus z Wilendorfu." },
-      { key: "prehistoria_02", title: "Malarstwo jaskiniowe w Lascaux" },
-      { key: "prehistoria_03", title: "Malarstwo jaskiniowe w Altamirze" },
-      { key: "prehistoria_04", title: "Megality w Stonhenge" }
+      { key: "egipt-piramidy", title: "Piramidy" },
+      { key: "egipt-faraon", title: "Faraonowie" }
     ]
   },
   {
-    id: "mezopotamia",
-    title: "Sztuka Mezopotamii.",
+    id: "greece",
+    title: "Starożytna Grecja",
     items: [
-      { key: "mezopotamia_01", title: "Zigurat z Ur," },
-      { key: "mezopotamia_02", title: "Sztandar z Ur," },
-      { key: "mezopotamia_03", title: "Lamassu z bramy pałacu Sargona II," },
-      { key: "mezopotamia_04", title: "Brama Isztar z Niniwy," },
-      { key: "mezopotamia_05", title: "Stela Hamurabiego," }
+      { key: "grecja-demokracja", title: "Demokracja ateńska" },
+      { key: "grecja-filozofia", title: "Filozofia" }
     ]
   }
 ];
