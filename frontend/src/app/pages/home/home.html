@@ -11,8 +11,14 @@
     <h2>{{ vm.title }}</h2>
 
     <ul>
-      <li *ngFor="let c of vm.items">
-        {{ c.title }}
+      <li *ngFor="let cat of vm.categories">
+        <b>{{ cat.title }}</b>
+
+        <ol>
+          <li *ngFor="let it of cat.items">
+            {{ it.title }}
+          </li>
+        </ol>
       </li>
     </ul>
   </ng-container>

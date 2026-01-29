@@ -40,17 +40,16 @@ app.post('/auth/login', async (req, res) => {
   res.json({ token });
 });
 
+const { CATEGORIES } = require('./data');
+
 app.get('/catalog', auth, (req, res) => {
-  res.set('Cache-Control', 'no-store');
   res.json({
+    id: 'ancient',
     title: 'Starożytność',
-    items: [
-      { key: 'egipt', title: 'Egipt' },
-      { key: 'grecja', title: 'Grecja' },
-      { key: 'rzym', title: 'Rzym' }
-    ]
+    categories: CATEGORIES
   });
 });
+
 
 app.get('/notes/:key', auth, async (req, res) => {
   const [[note]] = await db.query(

@@ -7,13 +7,12 @@ import { ApiService } from '../../services/api';
 import { AuthService } from '../../services/auth';
 
 type CatalogItem = { key: string; title: string };
-type CatalogObj = { title?: string; items?: CatalogItem[] };
-type CatalogArr = Array<{ id?: string; title?: string; items?: CatalogItem[] }>;
+type CatalogCategory = { id: string; title: string; items: CatalogItem[] };
 
 type Vm =
   | { state: 'loading' }
   | { state: 'error' }
-  | { state: 'ready'; title: string; items: CatalogItem[] };
+  | { state: 'ready'; title: string; categories: CatalogCategory[] };
 
 @Component({
   selector: 'app-home',
@@ -32,13 +31,10 @@ export class Home {
   ) {
     this.vm$ = this.api.catalog().pipe(
       map((data: any) => {
-        const catalog: CatalogObj | undefined =
-          Array.isArray(data) ? (data as CatalogArr)[0] : (data as CatalogObj);
-
-        const title = catalog?.title ?? 'Starożytność';
-        const items = catalog?.items ?? [];
-
-        return { state: 'ready', title, items } as Vm;
+        const root = Array.isArray(data) ? data[0] : data;
+        const title = root?.title ?? 'Starożytność';
+        const categories = Array.isArray(root?.categories) ? root.categories : [];
+        return { state: 'ready', title, categories } as Vm;
       }),
       startWith({ state: 'loading' } as Vm),
       catchError(() => of({ state: 'error' } as Vm))
